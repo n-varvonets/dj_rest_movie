@@ -137,10 +137,17 @@ class Review(models.Model):
     email = models.EmailField()
     name = models.CharField("Имя", max_length=100)
     text = models.TextField("Сообщение", max_length=5000)
+
+    # для того что бы достать наших детей,то нужно в модели к нашем полю parent мы должны добавить related_name
+    # таким образом мы сможем из наших родитей обратиться к нашим детям
     parent = models.ForeignKey(
-        'self', verbose_name="Родитель", on_delete=models.SET_NULL, blank=True, null=True
+        'self', verbose_name="Родитель", on_delete=models.SET_NULL, blank=True, null=True, related_name='children'
     )
-    movie = models.ForeignKey(Movie, verbose_name="фильм", on_delete=models.CASCADE)
+
+    movie = models.ForeignKey(
+        Movie, verbose_name="фильм", on_delete=models.CASCADE, related_name='reviews'
+    )  # related_name - это поле, которое нам позволяет обратиться из связующей таблицы в нашу таблицу,
+    # т.е. из таблицы Movies  в таблицу Reviews  именно по имени reviews... к примеру для нашего сериализатора
 
     def __str__(self):
         return f"{self.name} - {self.movie}"
