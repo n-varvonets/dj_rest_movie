@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Movie, Review
+from .models import Movie, Review, Rating
 
 
 class MovieListSerializer(serializers.ModelSerializer):
@@ -44,10 +44,10 @@ class RecursiveSerializer(serializers.Serializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    # TODO разобраться как работает вывод рекурсии, а то с первого не понял
+    # TODO разобраться как работает вывод рекурсии, а то с первого раза не понял
     """вывод отзывов"""
-    # 1)мы сначала должны выводить родительские отзывы, а потом вложенность дочерних
-    # 2)для этого дабавим поле children, которе будем подставлять вместо поля парент
+    # 1) мы сначала должны выводить родительские отзывы, а потом вложенность дочерних
+    # 2) для этого дабавим поле children, которое будем подставлять вместо поля парент
     children = RecursiveSerializer(many=True)
 
     class Meta:
@@ -81,5 +81,26 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # т.к. класс муви имеет дофига атрибутов, то можно указать какие поля не выводить, а остальные автоматом покажут
         exclude = ("draft", "tagline")
 
+
+class CreateRatingSerializer(serializers.ModelSerializer):
+    """добавление рейтинга пользователем"""
+
+    class Meta:
+        model = Rating
+        fields = ("star", "movie")
+
+    def create(self, validated_data):  # validated_data - данные, которые мы передадаем в
+        # сериализатор от клиентской стороны и обновлять мы будем поле star
+        rating = Rating.objects.update_or_create(
+            ip=validated_data.get('ip', None),
+            movie=validated_data.get('movie', None),
+            defaults={'star': validated_data.get('star')},
+        )
+        return rating
+
+    # {
+    # "star": 3,
+    # "movie":2
+    # }
 
 
