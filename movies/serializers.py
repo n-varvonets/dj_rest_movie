@@ -6,10 +6,14 @@ from .models import Movie, Review, Rating
 class MovieListSerializer(serializers.ModelSerializer):
     """Список фильмов"""
 
+    # добавим поле для просмотра на то оставил ли пользова тель рейтинг фильму или нет
+    rating_user = serializers.BooleanField()
+    middle_star = serializers.FloatField()
+
     class Meta:
         model = Movie
         # как и форме указываю поля, которые хочу выводить
-        fields = ("title", "tagline", "category")
+        fields = ("id", "title", "tagline", "category", "rating_user", 'middle_star')
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
@@ -26,7 +30,6 @@ class FilterReviewListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         data = data.filter(parent=None)
         return super().to_representation(data)
-
 
 
 class RecursiveSerializer(serializers.Serializer):
