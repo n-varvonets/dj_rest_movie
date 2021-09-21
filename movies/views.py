@@ -1,8 +1,9 @@
 from django.db import models
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .service import *
-from .models import Movie
+from .models import Movie, Actor
 from .serializers import *
 
 
@@ -79,3 +80,18 @@ class AddStarRatingView(APIView):
             return Response(status=201)
         else:
             return Response(status=400)
+
+
+"""суть generic в том что мы можем с легкостью описать логику, которую хотим вывести...
+мы должны указать всего лишь два аттрибута: queryset и классы реализации"""
+class ActorsListView(generics.ListAPIView):
+    """Вывод списка актёров/режисеров"""
+    queryset = Actor.objects.all()
+    serializer_class = ActorListSerializer  # мы просто указываем имя, а не вызываем.. так что без скобок
+
+
+class ActorsDetailView(generics.RetrieveAPIView):  # RetrieveAPIView - аналог класса DetailView  в простом джанго
+    """Вывод полного описания актера и режисера"""
+    queryset = Actor.objects.all()
+    serializer_class = ActorDetailSerializer
+

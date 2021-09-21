@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Movie, Review, Rating
+from .models import Movie, Review, Rating, Actor
 
 
 class MovieListSerializer(serializers.ModelSerializer):
@@ -22,6 +22,23 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
+
+
+class ActorListSerializer(serializers.ModelSerializer):
+    """Вывод списка актеров и режисеров"""
+
+    class Meta:
+        model = Actor
+        fields = ('id', 'name', 'image')
+
+
+class ActorDetailSerializer(serializers.ModelSerializer):
+    """Вывод полного описания актера и режисера"""
+
+    class Meta:
+        model = Actor
+        fields = '__all__'
+
 
 
 class FilterReviewListSerializer(serializers.ListSerializer):
@@ -65,12 +82,19 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MovieDetailSerializer(serializers.ModelSerializer):
     """Детали фильма"""
 
-    # что бы при выводу данных http://i.imgur.com/5nbJn5d.png отобржались вместо related полей отображалиссь не их  id,
-    # а их названия, то пропишем для них сериализаторы
+    # 0.1) что бы при выводу данных http://i.imgur.com/5nbJn5d.png отобржались вместо related полей отображалиссь
+    # 0.2) не их  id, а их названия, то пропишем для них сериализаторы
     category = serializers.SlugRelatedField(slug_field="name", read_only=True)
-    directors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
-    actors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
     genres = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+
+
+    #  3) сейчас в деталях к фильму выводяться только имена актеров/режимсеров(http://i.imgur.com/SGkPV8X.png),
+    # directors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+    # actors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+    #  4) но т.к. мы только что написали сериализатор с деталями к актеру/режисеру, то вывеодим их к шашему фильму
+    directors = ActorListSerializer(read_only=True, many=True)
+    actors = ActorListSerializer(read_only=True, many=True)
+
 
     # 1)можно добавить поле таким образом, но может упасть ошибка(http://i.imgur.com/NxIjG54.png),
     # т.к. в модели Movie отсутвует related field review
