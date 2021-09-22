@@ -1,5 +1,5 @@
 from django.db import models
-from rest_framework import generics
+from rest_framework import generics, permissions
 from .service import get_client_ip, MovieFilter
 from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,6 +12,11 @@ class MovieListView(generics.ListAPIView):
 
     filter_backends = (DjangoFilterBackend, )  # 3.1) к нашему классу подключаем фильтры джанго. Теперь в сервисах нужно написать классы "как и что нужно фильтровать"
     filterset_class = MovieFilter  # 3.2)  теперь указыв поля филтрации в сервисе передаем эти данные в переменную
+
+    # 4) добавим атрибут указываищий права доступа пользовталя для просмотра данного урл
+    # 4.1) без токена - http://i.imgur.com/HHLw2PK.png
+    # 4.2) с токеном в хидере - http://i.imgur.com/XbZr8xj.png
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         movies = Movie.objects.filter(draft=False).annotate(
