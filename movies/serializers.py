@@ -13,7 +13,7 @@ class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         # как и форме указываю поля, которые хочу выводить
-        fields = ("id", "title", "tagline", "category", "rating_user", 'middle_star')
+        fields = ("id", "title", "tagline", "category", "rating_user", 'middle_star', 'year', 'genres')
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):

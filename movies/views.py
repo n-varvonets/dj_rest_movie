@@ -1,21 +1,22 @@
 from django.db import models
 from rest_framework import generics
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .service import *
-from .models import Movie, Actor
+from .service import get_client_ip, MovieFilter
 from .serializers import *
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class MovieListView(generics.ListAPIView):
     """вывод списка фильмов с помщью уже generics"""
 
-    serializer_class = MovieListSerializer  # нашу сериализацю уже указываем как атрибут а не в методе
+    serializer_class = MovieListSerializer  # 1)нашу сериализацю уже указываем как атрибут а не в методе
+
+    filter_backends = (DjangoFilterBackend, )  # 3.1) к нашему классу подключаем фильтры джанго. Теперь в сервисах нужно написать классы "как и что нужно фильтровать"
+    filterset_class = MovieFilter  # 3.2)  теперь указыв поля филтрации в сервисе передаем эти данные в переменную
 
     def get_queryset(self):
         movies = Movie.objects.filter(draft=False).annotate(
             rating_user=models.Count(
-                'ratings', filter=models.Q(ratings__ip=get_client_ip(self.request))  # compared with APIView - request мы уже забираем из self
+                'ratings', filter=models.Q(ratings__ip=get_client_ip(self.request))  # 2)compared with APIView - request мы уже забираем из self
             )
         ).annotate(
             middle_star=models.Sum(models.F('ratings__star')) / models.Count(models.F('ratings')))
