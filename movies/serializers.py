@@ -122,7 +122,9 @@ class CreateRatingSerializer(serializers.ModelSerializer):
             ip=validated_data.get('ip', None),
             movie=validated_data.get('movie', None),
             defaults={'star': validated_data.get('star')},
-        )
+        )  # что бы избежать ошибки Original exception text was: 'tuple' object has no attribute 'star'.
+        # http://i.imgur.com/StxlnVT.png - то наш кортеж мы разложим на два элемента. (наш обьект будет передаваться в
+        # rating, а  True/False - в переменную _ )
         return rating
 
     # {
