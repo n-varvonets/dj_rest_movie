@@ -43,8 +43,16 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'django_filters',
+
     'djoser',
+
     'drf_yasg',
+
+    'oauth2_provider',
+    'social_django',
+    'rest_framework_social_oauth2',
+
+
 
     'movies',
 ]
@@ -204,11 +212,24 @@ CKEDITOR_CONFIGS = {
     }
 }
 
+SOCIAL_AUTH_FACEBOOK_KEY = '345288120680750'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'e21eaaf33a93ab22d0bfa5d70ef84e0e'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.facebook.FacebookOAuth2',
+    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+# https://developers.facebook.com/tools/accesstoken - по этой ссылке получаем  Bearer contact и получаем наш токен для входа http://i.imgur.com/fETUiuM.png
+
 REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
 
     'DEFAULT_FILTER_BACKENDS': (
@@ -257,3 +278,5 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+
