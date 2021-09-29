@@ -116,12 +116,12 @@ class CreateRatingSerializer(serializers.ModelSerializer):
         model = Rating
         fields = ("star", "movie")
 
-    def create(self, validated_data):  # validated_data - данные, которые мы передадаем в
-        # сериализатор от клиентской стороны и обновлять мы будем поле star
-        rating = Rating.objects.update_or_create(
+    def create(self, validated_data):  # validated_data(http://i.imgur.com/G4mcTnT.png) - данные, которые мы передадаем
+        # в сериализатор от клиентской стороны и обновлять мы будем поле star
+        rating, _ = Rating.objects.update_or_create(  # падала ошибка что видет поля и принимает тапл.. http://i.imgur.com/fHIV6fC.png - решение, добавить нижний_спейс для
             ip=validated_data.get('ip', None),
             movie=validated_data.get('movie', None),
-            defaults={'star': validated_data.get('star')},
+            defaults={'star': validated_data.get('star')}
         )  # что бы избежать ошибки Original exception text was: 'tuple' object has no attribute 'star'.
         # http://i.imgur.com/StxlnVT.png - то наш кортеж мы разложим на два элемента. (наш обьект будет передаваться в
         # rating, а  True/False - в переменную _ )

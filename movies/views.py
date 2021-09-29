@@ -60,7 +60,7 @@ class AddStarRatingView(generics.CreateAPIView):
 """суть generic в том что мы можем с легкостью описать логику, которую хотим вывести...
 мы должны указать всего лишь два аттрибута: queryset и классы реализации"""
 class ActorsListView(generics.ListAPIView):
-    """Вывод списка актёров/режисеров"""
+    """Вывод списка актёров/режисеров +"""
     queryset = Actor.objects.all()
     serializer_class = ActorListSerializer  # мы просто указываем имя, а не вызываем.. так что без скобок
 
