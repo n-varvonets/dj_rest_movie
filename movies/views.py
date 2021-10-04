@@ -1,23 +1,18 @@
 from django.db import models
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, viewsets
 from .service import get_client_ip, MovieFilter
 from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 
 
-class MovieListView(generics.ListAPIView):
-    """вывод списка фильмов с помщью уже generics"""
+class MovieViewSet(viewsets.ReadOnlyModelViewSet):
+    """вывод списка фильмов и полного фильма реализовано в одном классе при помощи viewsets"""
 
-    serializer_class = MovieListSerializer  # 1)нашу сериализацю уже указываем как атрибут а не в методе
-
+    """как и в generic описываем"""
     filter_backends = (DjangoFilterBackend, )  # 3.1) к нашему классу подключаем фильтры джанго. Теперь в сервисах нужно написать классы "как и что нужно фильтровать"
     filterset_class = MovieFilter  # 3.2)  теперь указыв поля филтрации в сервисе передаем эти данные в переменную
 
-    # 4) добавим атрибут указываищий права доступа пользовталя для просмотра данного урл
-    # 4.1) без токена - http://i.imgur.com/HHLw2PK.png
-    # 4.2) с токеном в хидере - http://i.imgur.com/XbZr8xj.png
-    permission_classes = [permissions.IsAuthenticated]
-
+    """как и  generic  получаем наш """
     def get_queryset(self):
         movies = Movie.objects.filter(draft=False).annotate(
             rating_user=models.Count(
@@ -27,51 +22,108 @@ class MovieListView(generics.ListAPIView):
             middle_star=models.Sum(models.F('ratings__star')) / models.Count(models.F('ratings')))
         return movies
 
+    """ т.к. для списка фильмов и одной записи мы используем разные сериализаторы,
+     то укажем это  переопределив метод get_serializer_class """
+    def get_serializer_class(self):
+        if self.action == "list":
+            return MovieListSerializer
+        elif self.action == "retrieve":
+            return MovieDetailSerializer
 
-class MovieDetailView(generics.RetrieveAPIView):
-    """вывод полного филмьа"""
-    queryset = Movie.objects.filter(draft=False)  # класс RetrieveAPIView сам подставит поиск по  pk
-    serializer_class = MovieDetailSerializer
 
-
-class ReviewCreateView(generics.CreateAPIView):
-    """вывод полного филмьа. было - http://i.imgur.com/b0jDcnJ.png, стало - http://i.imgur.com/J2Tr8RV.png"""
+class ReviewCreateViewSet(viewsets.ModelViewSet):  # ModelViewSet позволяет нам:
+    # добавлять запись(1), выводить список(all), обновлять(1) и удалять(1) запись
+    """добавление отзыва к фильму (просто указав сериализатор)
+    но т.к. по преполгаемуому функционалу отзыва мы можем только добавлять его или выводить весь список,
+    то урлс при post запросе будет вызываться метод create"""
     serializer_class = ReviewCreateSerializer
 
-    # {
-    # "email": "test@gmail.com",
-    # "name": "Mike",
-    # "text": "some text",
-    # "movie": 2
-    # }
 
-
-class AddStarRatingView(generics.CreateAPIView):
-    """Добавление рейтинга фильму"""
-
+class AddStarRatingViewSet(viewsets.ModelViewSet):
+    """Добавление рейтинга к фильму"""
     serializer_class = CreateRatingSerializer
 
     def perform_create(self, serializer):
-        """нам при сохраненинии нашей сериализации нужно добавлять айпи адресс нашего пользователя.
-        данный метод принимает нашу серилизацию и в метод save  мы можем указать дополнительно те парметры, которые хотим сохранить"""
-        serializer.save(ip=get_client_ip(self.request))  # request мы уже получаем через self
+        serializer.save(ip=get_client_ip(self.request))
 
 
-"""суть generic в том что мы можем с легкостью описать логику, которую хотим вывести...
-мы должны указать всего лишь два аттрибута: queryset и классы реализации"""
-class ActorsListView(generics.ListAPIView):
-    """Вывод списка актёров/режисеров +"""
+class ActorsViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вывод актеров или режисеров"""
     queryset = Actor.objects.all()
-    serializer_class = ActorListSerializer  # мы просто указываем имя, а не вызываем.. так что без скобок
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ActorListSerializer
+        elif self.action == "retrieve":
+            return ActorDetailSerializer
 
 
-class ActorsDetailView(generics.RetrieveAPIView):  # RetrieveAPIView - аналог класса DetailView  в простом джанго
-    """Вывод полного описания актера и режисера"""
-    queryset = Actor.objects.all()
-    serializer_class = ActorDetailSerializer
+"""-------------------------------классы на основе generics--------------------------------------"""
 
-
-
+# class MovieListView(generics.ListAPIView):
+#     """вывод списка фильмов с помщью уже generics"""
+#
+#     serializer_class = MovieListSerializer  # 1)нашу сериализацю уже указываем как атрибут а не в методе
+#
+#     filter_backends = (DjangoFilterBackend, )  # 3.1) к нашему классу подключаем фильтры джанго. Теперь в сервисах нужно написать классы "как и что нужно фильтровать"
+#     filterset_class = MovieFilter  # 3.2)  теперь указыв поля филтрации в сервисе передаем эти данные в переменную
+#
+#     # 4) добавим атрибут указываищий права доступа пользовталя для просмотра данного урл
+#     # 4.1) без токена - http://i.imgur.com/HHLw2PK.png
+#     # 4.2) с токеном в хидере - http://i.imgur.com/XbZr8xj.png
+#     permission_classes = [permissions.IsAuthenticated]
+#
+#     def get_queryset(self):
+#         movies = Movie.objects.filter(draft=False).annotate(
+#             rating_user=models.Count(
+#                 'ratings', filter=models.Q(ratings__ip=get_client_ip(self.request))  # 2)compared with APIView - request мы уже забираем из self
+#             )
+#         ).annotate(
+#             middle_star=models.Sum(models.F('ratings__star')) / models.Count(models.F('ratings')))
+#         return movies
+#
+#
+# class MovieDetailView(generics.RetrieveAPIView):
+#     """вывод полного филмьа"""
+#     queryset = Movie.objects.filter(draft=False)  # класс RetrieveAPIView сам подставит поиск по  pk
+#     serializer_class = MovieDetailSerializer
+#
+#
+# class ReviewCreateView(generics.CreateAPIView):
+#     """вывод полного филмьа. было - http://i.imgur.com/b0jDcnJ.png, стало - http://i.imgur.com/J2Tr8RV.png"""
+#     serializer_class = ReviewCreateSerializer
+#
+#     # {
+#     # "email": "test@gmail.com",
+#     # "name": "Mike",
+#     # "text": "some text",
+#     # "movie": 2
+#     # }
+#
+#
+# class AddStarRatingView(generics.CreateAPIView):
+#     """Добавление рейтинга фильму"""
+#
+#     serializer_class = CreateRatingSerializer
+#
+#     def perform_create(self, serializer):
+#         """нам при сохраненинии нашей сериализации нужно добавлять айпи адресс нашего пользователя.
+#         данный метод принимает нашу серилизацию и в метод save  мы можем указать дополнительно те парметры, которые хотим сохранить"""
+#         serializer.save(ip=get_client_ip(self.request))  # request мы уже получаем через self
+#
+#
+# """суть generic в том что мы можем с легкостью описать логику, которую хотим вывести...
+# мы должны указать всего лишь два аттрибута: queryset и классы реализации"""
+# class ActorsListView(generics.ListAPIView):
+#     """Вывод списка актёров/режисеров +"""
+#     queryset = Actor.objects.all()
+#     serializer_class = ActorListSerializer  # мы просто указываем имя, а не вызываем.. так что без скобок
+#
+#
+# class ActorsDetailView(generics.RetrieveAPIView):  # RetrieveAPIView - аналог класса DetailView  в простом джанго
+#     """Вывод полного описания актера и режисера"""
+#     queryset = Actor.objects.all()
+#     serializer_class = ActorDetailSerializer
 
 
 
