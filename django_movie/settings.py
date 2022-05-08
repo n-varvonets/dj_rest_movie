@@ -102,6 +102,11 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+# create database db_dj_rest_movie;
+# create user nick with encrypted password 'QQQqqq111';
+# ALTER USER nick WITH SUPERUSER;
+# grant all privileges on database db_dj_rest_movie to nick;
+# ALTER DATABASE db_dj_rest_movie OWNER TO nick;
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
