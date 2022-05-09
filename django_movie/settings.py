@@ -119,7 +119,8 @@ DATABASES = {
         'PORT': '5432'
     }
 }
-
+# и нужно создать в докере супер-пользователя(временно) с запущенным контейром(в докер-компоуз.ямл наш сервин - dm_movie)
+# sudo docker exec -it dm_movie python ./manage.py createsuperuser
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
