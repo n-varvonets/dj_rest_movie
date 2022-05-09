@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-e5j9g3(p7(qqon=dbrtdc@^5uh0c0u1cs)(gtftj*u!n9o(4-$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -92,21 +92,35 @@ WSGI_APPLICATION = 'django_movie.wsgi.application'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'db_dj_rest_movie',
-        'USER': 'nick',
-        'PASSWORD': 'QQQqqq111',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
+#  1) это для локальной работы бд
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'db_dj_rest_movie',
+#         'USER': 'nick',
+#         'PASSWORD': 'QQQqqq111',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 # create database db_dj_rest_movie;
 # create user nick with encrypted password 'QQQqqq111';
 # ALTER USER nick WITH SUPERUSER;
 # grant all privileges on database db_dj_rest_movie to nick;
 # ALTER DATABASE db_dj_rest_movie OWNER TO nick;
+#  2) это для докера настройки бд(смотри нужно указывать в "NAME" имя сервиса бд в докер-компоуз(dm_db))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': "trust",
+
+        'HOST': 'dm_db',
+        'PORT': '5432'
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
